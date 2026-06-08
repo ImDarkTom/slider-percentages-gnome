@@ -1,0 +1,28 @@
+{
+  "name": "slider-percentages",
+  "version": "0.0.0",
+  "description": "Adds percentages next to the various sliders/bars throughout the GNOME interface.",
+  "type": "module",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ImDarkTom/slider-percentages-gnome.git"
+  },
+  "author": "ImDarkTom",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/ImDarkTom/slider-percentages-gnome/issues"
+  },
+  "homepage": "https://github.com/ImDarkTom/slider-percentages-gnome#readme",
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@girs/gjs": "^4.0.4",
+    "@girs/gnome-shell": "^50.0.0"
+  }
+}

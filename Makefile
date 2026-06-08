@@ -1,21 +1,28 @@
 UUID = slider-percentages@imdarktom
 
-.PHONY: build install test-shell remove clean
+.PHONY: all pack install clean
 
-build: clean
-	mkdir -p build/
-	zip -r build/$(UUID).zip \
-		*.js \
-		*.json
+all: dist/extension.js
 
-install: build remove
-	gnome-extensions install -f build/$(UUID).zip
+node_modules/.package_lock.json: package.json
+	npm install
+
+dist/extension.js: node_modules/.package_lock.json *.ts
+	npm run build
+
+$(UUID).zip: dist/extension.js
+	@mkdir -p build/
+	@cp metadata.json dist/
+	@(cd dist && zip ../build/$(UUID).zip -9r .)
+
+pack: $(UUID).zip
+
+install: $(UUID).zip
+	gnome-extensions install --force build/$(UUID).zip
+
+clean:
+	@rm -rf dist node_modules build/
+
 
 test-shell: install
 	dbus-run-session gnome-shell --devkit --wayland
-
-remove:
-	rm -rf $(HOME)/.local/share/gnome-shell/extensions/$(UUID)
-
-clean:
-	rm -rf build/

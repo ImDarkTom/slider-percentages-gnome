@@ -7,10 +7,16 @@ import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 export default class SliderPercentagesExtension extends Extension {
+    _mixer?: Gvc.MixerControl;
+    _sink?: Gvc.MixerStream;
+
+    _idleId?: number;
+    _label?: St.Label;
+
     enable() {
         // Connect to mixer to track sink changes
         this._mixer = new Gvc.MixerControl({ name: this.uuid });
-        this._mixer.connectObject('default-sink-changed', (mixer) => this._onSinkChanged(mixer), this);
+        this._mixer.connectObject('default-sink-changed', (mixer: Gvc.MixerControl) => this._onSinkChanged(mixer), this);
         this._mixer.open();
 
         this._idleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
@@ -23,6 +29,10 @@ export default class SliderPercentagesExtension extends Extension {
             const quickSettingsMenu = Main.panel.statusArea.quickSettings.menu;
 
             const sliderRow = quickSettingsMenu._grid.get_children()[1].get_first_child();
+            if (!sliderRow) {
+                throw new Error(`${this.uuid}: Failed to find volume slider in quick settings.`);
+            }
+
             // [mute button] [slider] [<our inserted label>] [settings button]
             sliderRow.insert_child_at_index(this._label, 2);
 
@@ -33,7 +43,7 @@ export default class SliderPercentagesExtension extends Extension {
         });
     }
 
-    _onSinkChanged(mixer) {
+    _onSinkChanged(mixer: Gvc.MixerControl) {
         this._sink?.disconnectObject(this);
 
         this._sink = mixer.get_default_sink();
@@ -49,7 +59,7 @@ export default class SliderPercentagesExtension extends Extension {
     }
 
     _update() {
-        if (!this._label || !this._sink) return;
+        if (!this._label || !this._sink || !this._mixer) return;
 
         const volumePercent = Math.round(this._sink.get_volume() / this._mixer.get_vol_max_norm() * 100);
         this._label.text = this._sink.get_is_muted() ? '0%' : `${volumePercent}%`;
@@ -62,13 +72,13 @@ export default class SliderPercentagesExtension extends Extension {
         }
         
         this._sink?.disconnectObject(this);
-        this._sink = null;
+        this._sink = undefined;
 
         this._mixer?.disconnectObject(this);
         this._mixer?.close();
-        this._mixer = null;
+        this._mixer = undefined;
 
         this._label?.destroy();
-        this._label = null;
+        this._label = undefined;
     }
 }

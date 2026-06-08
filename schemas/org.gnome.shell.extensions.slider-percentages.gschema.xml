@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.slider-percentages" path="/org/gnome/shell/extensions/slider-percentages/">
+    <key name="quick-settings-volume" type="b">
+      <default>true</default>
+      <summary>Quick Settings: Volume Slider</summary>
+      <description>Show a volume percentage label next to the volume slider in the quick settings.</description>
+    </key>
+  </schema>
+</schemalist>

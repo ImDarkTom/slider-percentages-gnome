@@ -4,6 +4,7 @@
     "description": "Adds percentages next to the various sliders/bars throughout the GNOME interface.",
     "shell-version": [ "46", "47", "48", "49", "50" ],
     "url": "https://github.com/ImDarkTom/slider-percentages-gnome",
+    "settings-schema": "org.gnome.shell.extensions.slider-percentages",
     "donations": {
         "github": "imdarktom"
     }

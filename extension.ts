@@ -2,6 +2,7 @@ import St from 'gi://St';
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import Gvc from 'gi://Gvc';
+import Gio from "gi://Gio";
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
@@ -13,7 +14,11 @@ export default class SliderPercentagesExtension extends Extension {
     _idleId?: number;
     _label?: St.Label;
 
+    gsettings?: Gio.Settings;
+
     enable() {
+        this.gsettings = this.getSettings();
+
         // Connect to mixer to track sink changes
         this._mixer = new Gvc.MixerControl({ name: this.uuid });
         this._mixer.connectObject('default-sink-changed', (mixer: Gvc.MixerControl) => this._onSinkChanged(mixer), this);
@@ -25,6 +30,10 @@ export default class SliderPercentagesExtension extends Extension {
                 y_align: Clutter.ActorAlign.CENTER,
                 style: 'min-width: 3em; text-align: right;',
             });
+
+            this.gsettings?.bind('quick-settings-volume', this._label, 'visible',
+                Gio.SettingsBindFlags.DEFAULT
+            );
 
             const quickSettingsMenu = Main.panel.statusArea.quickSettings.menu;
 
@@ -66,6 +75,8 @@ export default class SliderPercentagesExtension extends Extension {
     }
 
     disable() {
+        this.gsettings = undefined;
+
         if (this._idleId) {
             GLib.source_remove(this._idleId);
             this._idleId = 0;

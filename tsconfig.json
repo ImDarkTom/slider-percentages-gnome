@@ -16,5 +16,6 @@
   ],
   "files": [
     "extension.ts",
+    "prefs.ts"
   ],
 }

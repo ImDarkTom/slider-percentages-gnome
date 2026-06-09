@@ -6,5 +6,10 @@
       <summary>Quick Settings: Volume Slider</summary>
       <description>Show a volume percentage label next to the volume slider in the quick settings.</description>
     </key>
+    <key name="osd-volume" type="b">
+      <default>true</default>
+      <summary>OSD: Volume Popup</summary>
+      <description>Show a volume percentage next to the OSD volume popup.</description>
+    </key>
   </schema>
 </schemalist>

@@ -27,10 +27,24 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
 
         quickSettingsGroup.add(quickSettingsVolumeEnabled);
 
+        const osdGroup = new Adw.PreferencesGroup({
+            title: _('On-Screen Display'),
+            description: _('Additions for OSD popups'),
+        });
+
+        page.add(osdGroup);
+
+        const osdVolumeEnabled = new Adw.SwitchRow({
+            title: _('Volume Popup'),
+            subtitle: _('Show a volume percentage next to the OSD volume popup'),
+        });
+
+        osdGroup.add(osdVolumeEnabled);
 
         window.add(page)
 
         this._settings!.bind('quick-settings-volume', quickSettingsVolumeEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
+        this._settings!.bind('osd-volume', osdVolumeEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         return Promise.resolve();
     }

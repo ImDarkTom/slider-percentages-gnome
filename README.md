@@ -1,6 +1,19 @@
 # GNOME Extension - Slider Percentages
 
-tba
+Adds percentage labels next to the various sliders/bars throughout the GNOME interface. Currently supports:
+
+*Quick Settings*:
+
+- Volume Slider
+- Brightness Slider
+
+*On-Screen Display*:
+
+- Volume Popup
+- Brightness Popup
+- Keyboard Backlight Popup
+
+All of the above labels are toggleable, so if you feel you don't need some you can simply disable them individially.
 
 ## Screenshots
 
@@ -10,7 +23,7 @@ tba
 
 The following extensions have been tested and are compatible:
 
-<!-- - [Quick Settings Audio Panel](https://extensions.gnome.org/extension/5940/quick-settings-audio-panel/) (v103 tested) -->
+- [Quick Settings Audio Panel](https://extensions.gnome.org/extension/5940/quick-settings-audio-panel/) (v103 tested)
 
 ## Development
 

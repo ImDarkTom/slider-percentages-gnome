@@ -27,8 +27,14 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             subtitle: _('Show a volume percentage label next to the volume slider in the quick settings'),
         });
 
-
         quickSettingsGroup.add(quickSettingsVolumeEnabled);
+
+        const quickSettingsBrightnessEnabled = new Adw.SwitchRow({
+            title: _('Brightness Slider'),
+            subtitle: _('Show a brightness percentage label next to the brightness slider in the quick settings'),
+        });
+
+        quickSettingsGroup.add(quickSettingsBrightnessEnabled);
 
         // OSD group
         const osdGroup = new Adw.PreferencesGroup({
@@ -56,6 +62,7 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
         window.add(page)
 
         this._settings!.bind('quick-settings-volume', quickSettingsVolumeEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
+        this._settings!.bind('quick-settings-brightness', quickSettingsBrightnessEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         this._settings!.bind('osd-volume', osdVolumeEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
         this._settings!.bind('osd-brightness', osdBrightnessEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);

@@ -6,6 +6,7 @@ import Gio from "gi://Gio";
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import { QuickSlider } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 
 /**
  * Shows percentages next to (supported) GNOME OSD popups.
@@ -194,9 +195,80 @@ class QuickSettingsVolumeLabel {
     }
 }
 
+class QuickSettingsBrightnessLabel {
+    private readonly settings: Gio.Settings;
+
+    private label?: St.Label;
+    private idleId = 0;
+
+    constructor(settings: Gio.Settings) {
+        this.settings = settings;
+    }
+
+    enable() {
+        // Lazily add after Quick Settings is built
+        this.idleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            this.label = new St.Label({
+                text: '--%',
+                y_align: Clutter.ActorAlign.CENTER,
+                style: 'min-width: 3em; text-align: right;',
+            });
+
+            this.settings?.bind('quick-settings-brightness', this.label, 'visible',
+                Gio.SettingsBindFlags.DEFAULT
+            );
+
+            const qsBrightnessIndicator = Main.panel.statusArea.quickSettings._brightness;
+            const qsBrightnessItem = qsBrightnessIndicator?.quickSettingsItems?.[0] as QuickSlider | undefined;
+            if (!qsBrightnessItem) {
+                // Device/displays don't support custom brightness
+                this.idleId = 0;
+                return GLib.SOURCE_REMOVE;
+            }
+
+            const sliderRow = qsBrightnessItem.get_first_child();
+            if (!sliderRow) {
+                this.idleId = 0;
+                return GLib.SOURCE_REMOVE;
+            }
+
+            // [brightness icon] [slider] [<our inserted label>]
+            sliderRow.insert_child_at_index(this.label, 2);
+
+            qsBrightnessItem.slider.connectObject('notify::value',
+                () => this.updateLabel(qsBrightnessItem.slider.value),
+                this
+            );
+
+            this.updateLabel(qsBrightnessItem.slider.value);
+
+            this.idleId = 0;
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    disable() {
+        if (this.idleId) {
+            GLib.source_remove(this.idleId);
+            this.idleId = 0;
+        }
+        
+        this.label?.destroy();
+        this.label = undefined;
+    }
+
+    private updateLabel(newValue: number) {
+        if (!this.label) return;
+
+        const brightnessPercent = Math.round(newValue * 100);
+        this.label.text = `${brightnessPercent}%`;
+    }
+}
+
 export default class SliderPercentagesExtension extends Extension {
     private osdLabels?: OsdLabels;
     private qsVolumeLabel?: QuickSettingsVolumeLabel;
+    private qsBrightnessLabel?: QuickSettingsBrightnessLabel;
 
     enable() {
         const settings = this.getSettings();
@@ -206,6 +278,9 @@ export default class SliderPercentagesExtension extends Extension {
 
         this.qsVolumeLabel = new QuickSettingsVolumeLabel(settings, this.uuid);
         this.qsVolumeLabel.enable();
+
+        this.qsBrightnessLabel = new QuickSettingsBrightnessLabel(settings);
+        this.qsBrightnessLabel.enable();
     }
 
     disable() {
@@ -214,5 +289,8 @@ export default class SliderPercentagesExtension extends Extension {
 
         this.qsVolumeLabel?.disable();
         this.qsVolumeLabel = undefined;
+
+        this.qsBrightnessLabel?.disable();
+        this.qsBrightnessLabel = undefined;
     }
 }

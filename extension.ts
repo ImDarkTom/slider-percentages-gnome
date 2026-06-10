@@ -99,27 +99,29 @@ class OsdVolumeLabel {
     }
 }
 
-export default class SliderPercentagesExtension extends Extension {
-    _mixer?: Gvc.MixerControl;
-    _sink?: Gvc.MixerStream;
+class QuickSettingsVolumeLabel {
+    private readonly gsettings: Gio.Settings;
+    private readonly mixerName: string;
 
-    _idleId?: number;
-    _label?: St.Label;
+    private _mixer?: Gvc.MixerControl;
+    private _sink?: Gvc.MixerStream;
+    private _label?: St.Label;
+    private _idleId = 0;
 
-    _osdVolumeLabel?: OsdVolumeLabel;
-
-    gsettings?: Gio.Settings;
+    constructor(settings: Gio.Settings, mixerName: string) {
+        this.gsettings = settings;
+        this.mixerName = mixerName;   
+    }
 
     enable() {
-        this.gsettings = this.getSettings();
-
         // Connect to mixer to track sink changes
-        this._mixer = new Gvc.MixerControl({ name: this.uuid });
-        this._mixer.connectObject('default-sink-changed', (mixer: Gvc.MixerControl) => this._onSinkChanged(mixer), this);
+        this._mixer = new Gvc.MixerControl({ name: this.mixerName });
+        this._mixer.connectObject(
+            'default-sink-changed', 
+            (mixer: Gvc.MixerControl) => this._onSinkChanged(mixer), this
+        
+        );
         this._mixer.open();
-
-        this._osdVolumeLabel = new OsdVolumeLabel(this.gsettings);
-        this._osdVolumeLabel.enable();
 
         this._idleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
             this._label = new St.Label({
@@ -136,7 +138,7 @@ export default class SliderPercentagesExtension extends Extension {
 
             const sliderRow = quickSettingsMenu._grid.get_children()[1].get_first_child();
             if (!sliderRow) {
-                throw new Error(`${this.uuid}: Failed to find volume slider in quick settings.`);
+                throw new Error('Failed to find volume slider in quick settings.');
             }
 
             // [mute button] [slider] [<our inserted label>] [settings button]
@@ -149,7 +151,7 @@ export default class SliderPercentagesExtension extends Extension {
         });
     }
 
-    _onSinkChanged(mixer: Gvc.MixerControl) {
+    private _onSinkChanged(mixer: Gvc.MixerControl) {
         this._sink?.disconnectObject(this);
 
         this._sink = mixer.get_default_sink();
@@ -164,7 +166,7 @@ export default class SliderPercentagesExtension extends Extension {
         this._update();
     }
 
-    _update() {
+    private _update() {
         if (!this._label || !this._sink || !this._mixer) return;
 
         const volumePercent = Math.round(this._sink.get_volume() / this._mixer.get_vol_max_norm() * 100);
@@ -172,11 +174,6 @@ export default class SliderPercentagesExtension extends Extension {
     }
 
     disable() {
-        this._osdVolumeLabel?.disable();
-        this._osdVolumeLabel = undefined;
-
-        this.gsettings = undefined;
-
         if (this._idleId) {
             GLib.source_remove(this._idleId);
             this._idleId = 0;
@@ -191,5 +188,28 @@ export default class SliderPercentagesExtension extends Extension {
 
         this._label?.destroy();
         this._label = undefined;
+    }
+}
+
+export default class SliderPercentagesExtension extends Extension {
+    _osdVolumeLabel?: OsdVolumeLabel;
+    _qsVolumeLabel?: QuickSettingsVolumeLabel;
+
+    enable() {
+        const settings = this.getSettings();
+
+        this._osdVolumeLabel = new OsdVolumeLabel(settings);
+        this._osdVolumeLabel.enable();
+
+        this._qsVolumeLabel = new QuickSettingsVolumeLabel(settings, this.uuid);
+        this._qsVolumeLabel.enable();
+    }
+
+    disable() {
+        this._osdVolumeLabel?.disable();
+        this._osdVolumeLabel = undefined;
+
+        this._qsVolumeLabel?.disable();
+        this._qsVolumeLabel = undefined;
     }
 }

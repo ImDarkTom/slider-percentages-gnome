@@ -103,10 +103,10 @@ class QuickSettingsVolumeLabel {
     private readonly gsettings: Gio.Settings;
     private readonly mixerName: string;
 
-    private _mixer?: Gvc.MixerControl;
-    private _sink?: Gvc.MixerStream;
-    private _label?: St.Label;
-    private _idleId = 0;
+    private mixer?: Gvc.MixerControl;
+    private sink?: Gvc.MixerStream;
+    private label?: St.Label;
+    private idleId = 0;
 
     constructor(settings: Gio.Settings, mixerName: string) {
         this.gsettings = settings;
@@ -115,22 +115,22 @@ class QuickSettingsVolumeLabel {
 
     enable() {
         // Connect to mixer to track sink changes
-        this._mixer = new Gvc.MixerControl({ name: this.mixerName });
-        this._mixer.connectObject(
+        this.mixer = new Gvc.MixerControl({ name: this.mixerName });
+        this.mixer.connectObject(
             'default-sink-changed', 
-            (mixer: Gvc.MixerControl) => this._onSinkChanged(mixer), this
-        
+            (mixer: Gvc.MixerControl) => this.onSinkChanged(mixer), this
         );
-        this._mixer.open();
+        this.mixer.open();
 
-        this._idleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-            this._label = new St.Label({
+        // Lazily add after Quick Settings is build
+        this.idleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            this.label = new St.Label({
                 text: '--%',
                 y_align: Clutter.ActorAlign.CENTER,
                 style: 'min-width: 3em; text-align: right;',
             });
 
-            this.gsettings?.bind('quick-settings-volume', this._label, 'visible',
+            this.gsettings?.bind('quick-settings-volume', this.label, 'visible',
                 Gio.SettingsBindFlags.DEFAULT
             );
 
@@ -142,74 +142,74 @@ class QuickSettingsVolumeLabel {
             }
 
             // [mute button] [slider] [<our inserted label>] [settings button]
-            sliderRow.insert_child_at_index(this._label, 2);
+            sliderRow.insert_child_at_index(this.label, 2);
 
-            this._update();
+            this.updateLabel();
 
-            this._idleId = 0;
+            this.idleId = 0;
             return GLib.SOURCE_REMOVE;
         });
     }
 
-    private _onSinkChanged(mixer: Gvc.MixerControl) {
-        this._sink?.disconnectObject(this);
+    private onSinkChanged(mixer: Gvc.MixerControl) {
+        this.sink?.disconnectObject(this);
 
-        this._sink = mixer.get_default_sink();
-        if (!this._sink) return;
+        this.sink = mixer.get_default_sink();
+        if (!this.sink) return;
 
-        this._sink.connectObject(
-            'notify::volume', () => this._update(),
-            'notify::is-muted', () => this._update(),
+        this.sink.connectObject(
+            'notify::volume', () => this.updateLabel(),
+            'notify::is-muted', () => this.updateLabel(),
             this
         );
 
-        this._update();
+        this.updateLabel();
     }
 
-    private _update() {
-        if (!this._label || !this._sink || !this._mixer) return;
+    private updateLabel() {
+        if (!this.label || !this.sink || !this.mixer) return;
 
-        const volumePercent = Math.round(this._sink.get_volume() / this._mixer.get_vol_max_norm() * 100);
-        this._label.text = this._sink.get_is_muted() ? '0%' : `${volumePercent}%`;
+        const volumePercent = Math.round(this.sink.get_volume() / this.mixer.get_vol_max_norm() * 100);
+        this.label.text = this.sink.get_is_muted() ? '0%' : `${volumePercent}%`;
     }
 
     disable() {
-        if (this._idleId) {
-            GLib.source_remove(this._idleId);
-            this._idleId = 0;
+        if (this.idleId) {
+            GLib.source_remove(this.idleId);
+            this.idleId = 0;
         }
         
-        this._sink?.disconnectObject(this);
-        this._sink = undefined;
+        this.sink?.disconnectObject(this);
+        this.sink = undefined;
 
-        this._mixer?.disconnectObject(this);
-        this._mixer?.close();
-        this._mixer = undefined;
+        this.mixer?.disconnectObject(this);
+        this.mixer?.close();
+        this.mixer = undefined;
 
-        this._label?.destroy();
-        this._label = undefined;
+        this.label?.destroy();
+        this.label = undefined;
     }
 }
 
 export default class SliderPercentagesExtension extends Extension {
-    _osdVolumeLabel?: OsdVolumeLabel;
-    _qsVolumeLabel?: QuickSettingsVolumeLabel;
+    private osdVolumeLabel?: OsdVolumeLabel;
+    private qsVolumeLabel?: QuickSettingsVolumeLabel;
 
     enable() {
         const settings = this.getSettings();
 
-        this._osdVolumeLabel = new OsdVolumeLabel(settings);
-        this._osdVolumeLabel.enable();
+        this.osdVolumeLabel = new OsdVolumeLabel(settings);
+        this.osdVolumeLabel.enable();
 
-        this._qsVolumeLabel = new QuickSettingsVolumeLabel(settings, this.uuid);
-        this._qsVolumeLabel.enable();
+        this.qsVolumeLabel = new QuickSettingsVolumeLabel(settings, this.uuid);
+        this.qsVolumeLabel.enable();
     }
 
     disable() {
-        this._osdVolumeLabel?.disable();
-        this._osdVolumeLabel = undefined;
+        this.osdVolumeLabel?.disable();
+        this.osdVolumeLabel = undefined;
 
-        this._qsVolumeLabel?.disable();
-        this._qsVolumeLabel = undefined;
+        this.qsVolumeLabel?.disable();
+        this.qsVolumeLabel = undefined;
     }
 }

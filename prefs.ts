@@ -3,10 +3,8 @@ import Gio from 'gi://Gio';
 import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 export default class SliderPercentagesPreferences extends ExtensionPreferences {
-    _settings?: Gio.Settings;
-
     fillPreferencesWindow(window: Adw.PreferencesWindow): Promise<void> {
-        this._settings = this.getSettings();
+        const settings  = this.getSettings();
 
         const page = new Adw.PreferencesPage({
             title: _('General'),
@@ -68,12 +66,12 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
 
         window.add(page)
 
-        this._settings!.bind('quick-settings-volume', quickSettingsVolumeEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
-        this._settings!.bind('quick-settings-brightness', quickSettingsBrightnessEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
+        settings.bind('quick-settings-volume', quickSettingsVolumeEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
+        settings.bind('quick-settings-brightness', quickSettingsBrightnessEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
 
-        this._settings!.bind('osd-volume', osdVolumeEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
-        this._settings!.bind('osd-brightness', osdBrightnessEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
-        this._settings!.bind('osd-keyboard-backlight', osdKeyboardBacklightEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
+        settings.bind('osd-volume', osdVolumeEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
+        settings.bind('osd-brightness', osdBrightnessEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
+        settings.bind('osd-keyboard-backlight', osdKeyboardBacklightEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         return Promise.resolve();
     }

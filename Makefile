@@ -11,10 +11,7 @@ node_modules/.package_lock.json: package.json
 dist/extension.js dist/prefs.js: node_modules/.package_lock.json *.ts
 	npm run build
 
-schemas/gschemas.compiled: schemas/org.gnome.shell.extensions.$(NAME).gschema.xml
-	glib-compile-schemas schemas
-
-$(UUID).zip: dist/extension.js dist/prefs.js schemas/gschemas.compiled
+$(UUID).zip: dist/extension.js dist/prefs.js
 	@mkdir -p build/
 	@cp -r schemas dist/
 	@cp metadata.json dist/

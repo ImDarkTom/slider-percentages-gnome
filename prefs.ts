@@ -59,6 +59,13 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
 
         osdGroup.add(osdBrightnessEnabled);
 
+        const osdKeyboardBacklightEnabled = new Adw.SwitchRow({
+            title: _('Keyboard Backlight Popup'),
+            subtitle: _('Show a brightness level next to the OSD keyboard backlight popup (if supported)'),
+        });
+
+        osdGroup.add(osdKeyboardBacklightEnabled);
+
         window.add(page)
 
         this._settings!.bind('quick-settings-volume', quickSettingsVolumeEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
@@ -66,6 +73,7 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
 
         this._settings!.bind('osd-volume', osdVolumeEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
         this._settings!.bind('osd-brightness', osdBrightnessEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
+        this._settings!.bind('osd-keyboard-backlight', osdKeyboardBacklightEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         return Promise.resolve();
     }

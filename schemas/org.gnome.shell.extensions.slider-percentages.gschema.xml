@@ -21,5 +21,10 @@
       <summary>OSD: Brightness Popup</summary>
       <description>Show a brightness percentage next to the OSD brightness popup.</description>
     </key>
+    <key name="osd-keyboard-backlight" type="b">
+      <default>true</default>
+      <summary>OSD: Keyboard Backlight Popup</summary>
+      <description>Show a brightness percentage next to the OSD keyboard backlight popup.</description>
+    </key>
   </schema>
 </schemalist>

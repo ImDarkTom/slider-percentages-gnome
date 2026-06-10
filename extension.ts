@@ -66,8 +66,13 @@ class OsdLabels {
         const key = this.settingsKeyFor(osd);
 
         if (value != null && key && this.settings.get_boolean(key)) {
-            // Value for all OSDs is always 0..1
-            label.text = `${Math.round(value * 100)}%`;
+            // https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/js/ui/osdWindow.js#L45
+            const max = osd.level?.maximumValue;
+            const fraction = max && max > 0 
+                ? value / max 
+                : value;
+
+            label.text = `${Math.round(fraction * 100)}%`;
             label.visible = true;
         } else {
             label.visible = false;
@@ -97,6 +102,8 @@ class OsdLabels {
             return 'osd-volume';
         } else if (iconNames.some((name) => name.startsWith('display-brightness'))) {
             return 'osd-brightness';
+        } else if (iconNames.some((name) => name.startsWith('keyboard-brightness'))) {
+            return 'osd-keyboard-backlight';
         } else {
             return null;
         }

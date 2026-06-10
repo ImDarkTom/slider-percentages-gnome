@@ -1,7 +1,7 @@
 {
   "name": "slider-percentages",
   "version": "0.0.0",
-  "description": "Adds percentages next to the various sliders/bars throughout the GNOME interface.",
+  "description": "Adds percentage labels next to the various sliders/bars throughout the GNOME interface.",
   "type": "module",
   "private": true,
   "repository": {

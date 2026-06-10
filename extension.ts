@@ -67,7 +67,7 @@ class OsdLabels {
 
         if (value != null && key && this.settings.get_boolean(key)) {
             // https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/js/ui/osdWindow.js#L45
-            const max = osd.level?.maximumValue;
+            const max = osd._level?.maximumValue;
             const fraction = max && max > 0 
                 ? value / max 
                 : value;
@@ -206,6 +206,7 @@ class QuickSettingsBrightnessLabel {
     private readonly settings: Gio.Settings;
 
     private label?: St.Label;
+    private slider?: QuickSlider['slider'];
     private idleId = 0;
 
     constructor(settings: Gio.Settings) {
@@ -242,12 +243,13 @@ class QuickSettingsBrightnessLabel {
             // [brightness icon] [slider] [<our inserted label>]
             sliderRow.insert_child_at_index(this.label, 2);
 
-            qsBrightnessItem.slider.connectObject('notify::value',
-                () => this.updateLabel(qsBrightnessItem.slider.value),
+            this.slider = qsBrightnessItem.slider;
+            this.slider.connectObject('notify::value',
+                () => this.updateLabel(this.slider!.value),
                 this
             );
 
-            this.updateLabel(qsBrightnessItem.slider.value);
+            this.updateLabel(this.slider.value);
 
             this.idleId = 0;
             return GLib.SOURCE_REMOVE;
@@ -259,7 +261,10 @@ class QuickSettingsBrightnessLabel {
             GLib.source_remove(this.idleId);
             this.idleId = 0;
         }
-        
+
+        this.slider?.disconnectObject(this);
+        this.slider = undefined;
+
         this.label?.destroy();
         this.label = undefined;
     }

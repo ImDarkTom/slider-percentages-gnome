@@ -103,7 +103,7 @@ class OsdLabels {
 }
 
 class QuickSettingsVolumeLabel {
-    private readonly gsettings: Gio.Settings;
+    private readonly settings: Gio.Settings;
     private readonly mixerName: string;
 
     private mixer?: Gvc.MixerControl;
@@ -112,7 +112,7 @@ class QuickSettingsVolumeLabel {
     private idleId = 0;
 
     constructor(settings: Gio.Settings, mixerName: string) {
-        this.gsettings = settings;
+        this.settings = settings;
         this.mixerName = mixerName;   
     }
 
@@ -133,7 +133,7 @@ class QuickSettingsVolumeLabel {
                 style: 'min-width: 3em; text-align: right;',
             });
 
-            this.gsettings?.bind('quick-settings-volume', this.label, 'visible',
+            this.settings?.bind('quick-settings-volume', this.label, 'visible',
                 Gio.SettingsBindFlags.DEFAULT
             );
 
@@ -152,6 +152,23 @@ class QuickSettingsVolumeLabel {
             this.idleId = 0;
             return GLib.SOURCE_REMOVE;
         });
+    }
+
+    disable() {
+        if (this.idleId) {
+            GLib.source_remove(this.idleId);
+            this.idleId = 0;
+        }
+        
+        this.sink?.disconnectObject(this);
+        this.sink = undefined;
+
+        this.mixer?.disconnectObject(this);
+        this.mixer?.close();
+        this.mixer = undefined;
+
+        this.label?.destroy();
+        this.label = undefined;
     }
 
     private onSinkChanged(mixer: Gvc.MixerControl) {
@@ -174,23 +191,6 @@ class QuickSettingsVolumeLabel {
 
         const volumePercent = Math.round(this.sink.get_volume() / this.mixer.get_vol_max_norm() * 100);
         this.label.text = this.sink.get_is_muted() ? '0%' : `${volumePercent}%`;
-    }
-
-    disable() {
-        if (this.idleId) {
-            GLib.source_remove(this.idleId);
-            this.idleId = 0;
-        }
-        
-        this.sink?.disconnectObject(this);
-        this.sink = undefined;
-
-        this.mixer?.disconnectObject(this);
-        this.mixer?.close();
-        this.mixer = undefined;
-
-        this.label?.destroy();
-        this.label = undefined;
     }
 }
 

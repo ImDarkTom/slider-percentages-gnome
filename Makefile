@@ -1,7 +1,7 @@
 NAME = slider-percentages
 UUID = $(NAME)@imdarktom
 
-.PHONY: all pack install clean
+.PHONY: all pack install clean test-shell
 
 all: dist/extension.js
 
@@ -24,7 +24,6 @@ install: $(UUID).zip
 
 clean:
 	@rm -rf dist node_modules build/
-
 
 test-shell: install
 	dbus-run-session gnome-shell --devkit --wayland

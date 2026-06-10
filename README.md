@@ -17,7 +17,17 @@ All of the above labels are toggleable, so if you feel you don't need some you c
 
 ## Screenshots
 
-> tba
+*Quick Settings*:
+
+<img width="250" height="audo" alt="Quick Settings Preview" src="https://github.com/user-attachments/assets/63ae7ae1-c426-4cf4-8292-c9a04b830339" />
+
+*OSD Popups*:
+
+<img width="250" height="auto" alt="Volume OSD Preview" src="https://github.com/user-attachments/assets/cfa8d650-85cc-4e79-8934-d332aa41f2f6" />
+
+<img width="250" height="auto" alt="Brightness OSD Preview" src="https://github.com/user-attachments/assets/6a1b4473-a3e2-4c5e-a014-476ac4f21967" />
+
+<img width="250" height="auto" alt="Keyboard Backlight OSD Preview" src="https://github.com/user-attachments/assets/8881600e-463e-45a1-93c0-db5bbbb546d8" />
 
 ## Extension Compatibility
 

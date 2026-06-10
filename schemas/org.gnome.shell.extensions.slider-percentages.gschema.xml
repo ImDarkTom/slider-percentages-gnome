@@ -11,5 +11,10 @@
       <summary>OSD: Volume Popup</summary>
       <description>Show a volume percentage next to the OSD volume popup.</description>
     </key>
+    <key name="osd-brightness" type="b">
+      <default>true</default>
+      <summary>OSD: Brightness Popup</summary>
+      <description>Show a brightness percentage next to the OSD brightness popup.</description>
+    </key>
   </schema>
 </schemalist>

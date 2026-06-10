@@ -8,8 +8,7 @@ import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 /**
- * Shows a volume percentage next to GNOME's OSD popup (popup that appears
- * when adjusting the volume with media keys).
+ * Shows percentages next to (supported) GNOME OSD popups.
  *
  * GNOME exposes no hook for this, so we wrap `OsdWindow.setLevel()`. Wrapping it
  * on the shared prototype means popups created later (e.g. when a monitor is
@@ -19,7 +18,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
  * Loosely based on:
  * - https://github.com/orgs/linuxmint/discussions/752
  */
-class OsdVolumeLabel {
+class OsdLabels {
     private readonly settings: Gio.Settings;
     private osdPrototype?: any;
     private originalSetLevel?: (value: number | null) => void;
@@ -38,7 +37,7 @@ class OsdVolumeLabel {
 
         const self = this;
         this.osdPrototype.setLevel = function (value: number | null) {
-            // `this` is the OsdWindow being updated, `self` is this OsdVolumeLabel.
+            // `this` is the OsdWindow being updated, `self` is this OsdLabels.
             self.originalSetLevel!.call(this, value);
             self.updateLabel(this, value);
         };
@@ -63,13 +62,10 @@ class OsdVolumeLabel {
 
     private updateLabel(osd: any, value: number | null) {
         const label = this.labelFor(osd);
+        const key = this.settingsKeyFor(osd);
 
-        if (
-            value != null 
-            && this.isVolumeOsd(osd) 
-            && this.settings.get_boolean('osd-volume')
-        ) {
-            // `value` in this context is the volume as a float, e.g. '0.50' for 50%
+        if (value != null && key && this.settings.get_boolean(key)) {
+            // Value for all OSDs is always 0..1
             label.text = `${Math.round(value * 100)}%`;
             label.visible = true;
         } else {
@@ -93,9 +89,16 @@ class OsdVolumeLabel {
         return osd._percentLabel;
     }
 
-    private isVolumeOsd(osd: any): boolean {
+    private settingsKeyFor(osd: any): string | null {
         const iconNames: string[] = osd._icon?.gicon?.get_names?.() ?? [];
-        return iconNames.some(name => name.startsWith('audio-'));
+        
+        if (iconNames.some((name) => name.startsWith('audio-'))) {
+            return 'osd-volume';
+        } else if (iconNames.some((name) => name.startsWith('display-brightness'))) {
+            return 'osd-brightness';
+        } else {
+            return null;
+        }
     }
 }
 
@@ -192,22 +195,22 @@ class QuickSettingsVolumeLabel {
 }
 
 export default class SliderPercentagesExtension extends Extension {
-    private osdVolumeLabel?: OsdVolumeLabel;
+    private osdLabels?: OsdLabels;
     private qsVolumeLabel?: QuickSettingsVolumeLabel;
 
     enable() {
         const settings = this.getSettings();
 
-        this.osdVolumeLabel = new OsdVolumeLabel(settings);
-        this.osdVolumeLabel.enable();
+        this.osdLabels = new OsdLabels(settings);
+        this.osdLabels.enable();
 
         this.qsVolumeLabel = new QuickSettingsVolumeLabel(settings, this.uuid);
         this.qsVolumeLabel.enable();
     }
 
     disable() {
-        this.osdVolumeLabel?.disable();
-        this.osdVolumeLabel = undefined;
+        this.osdLabels?.disable();
+        this.osdLabels = undefined;
 
         this.qsVolumeLabel?.disable();
         this.qsVolumeLabel = undefined;

@@ -13,6 +13,7 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             iconName: 'dialog-information-symbolic',
         });
 
+        // QS group
         const quickSettingsGroup = new Adw.PreferencesGroup({
             title: _('Quick Settings'),
             description: _('Additions for the Quick Settings panel'),
@@ -20,13 +21,16 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
 
         page.add(quickSettingsGroup);
 
+        // QS items
         const quickSettingsVolumeEnabled = new Adw.SwitchRow({
             title: _('Volume Slider'),
             subtitle: _('Show a volume percentage label next to the volume slider in the quick settings'),
         });
 
+
         quickSettingsGroup.add(quickSettingsVolumeEnabled);
 
+        // OSD group
         const osdGroup = new Adw.PreferencesGroup({
             title: _('On-Screen Display'),
             description: _('Additions for OSD popups'),
@@ -34,6 +38,7 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
 
         page.add(osdGroup);
 
+        // OSD items
         const osdVolumeEnabled = new Adw.SwitchRow({
             title: _('Volume Popup'),
             subtitle: _('Show a volume percentage next to the OSD volume popup'),
@@ -41,10 +46,19 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
 
         osdGroup.add(osdVolumeEnabled);
 
+        const osdBrightnessEnabled = new Adw.SwitchRow({
+            title: _('Brightness Popup'),
+            subtitle: _('Show a brightness percentage next to the OSD brightness popup'),
+        });
+
+        osdGroup.add(osdBrightnessEnabled);
+
         window.add(page)
 
         this._settings!.bind('quick-settings-volume', quickSettingsVolumeEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
+
         this._settings!.bind('osd-volume', osdVolumeEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
+        this._settings!.bind('osd-brightness', osdBrightnessEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         return Promise.resolve();
     }

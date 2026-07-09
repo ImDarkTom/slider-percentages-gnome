@@ -61,15 +61,15 @@ class PercentageLabel {
             min-width: 3em;
             text-align: right;
             font-weight: ${weight};
-            font-family: ${fontFamily};
+            ${fontFamily ? `font-family: ${fontFamily};`: ''}
         `;
     }
 
-    private fontFamily(): string {
-        const families = ['sans-serif', 'serif', 'monospace'];
+    private fontFamily(): string | null {
+        const families = [null, 'sans-serif', 'serif', 'monospace'];
         const selected = this.settings.get_int('label-font-family');
 
-        if (selected !== 3) {
+        if (selected !== 4) {
             return families[selected] ?? families[0];
         } else {
             const customFamily = this.settings.get_string('label-custom-font-family').trim();

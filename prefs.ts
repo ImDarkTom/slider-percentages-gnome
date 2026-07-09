@@ -39,7 +39,8 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             title: _('Font Family'),
             subtitle: _('Which font family the labels use'),
             model: Gtk.StringList.new([
-                _('System Default (sans-serif)'),
+                _('System Default'),
+                _('Sans serif'),
                 _('Serif'),
                 _('Monospace'),
                 _('Custom'),

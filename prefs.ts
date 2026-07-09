@@ -4,12 +4,12 @@ import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/
 import Gtk from 'gi://Gtk';
 
 export default class SliderPercentagesPreferences extends ExtensionPreferences {
-    private static createLabelPrefsGroup(settings: Gio.Settings): Adw.PreferencesGroup {
-        const labelGroup = new Adw.PreferencesGroup({
-            title: _('Label'),
-            description: _('Customise the added label'),
-        });
-
+    private static createLabelPrefsRows({ settings, group, optionKeyPrefix }: {
+        settings: Gio.Settings, 
+        group: Adw.PreferencesGroup,
+        optionKeyPrefix: string,
+    }) {
+        const prefix = (key: string) => `${optionKeyPrefix}${key}`;
 
         const fontWeightRow = new Adw.ComboRow({
             title: _('Font Weight'),
@@ -28,8 +28,8 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             ]),
         });
 
-        labelGroup.add(fontWeightRow);
-        settings.bind('label-font-weight', fontWeightRow, 'selected', Gio.SettingsBindFlags.DEFAULT);
+        group.add(fontWeightRow);
+        settings.bind(prefix('label-font-weight'), fontWeightRow, 'selected', Gio.SettingsBindFlags.DEFAULT);
 
 
         const fontFamilyRow = new Adw.ComboRow({
@@ -44,20 +44,20 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             ]),
         });
 
-        labelGroup.add(fontFamilyRow);
-        settings.bind('label-font-family', fontFamilyRow, 'selected', Gio.SettingsBindFlags.DEFAULT);
+        group.add(fontFamilyRow);
+        settings.bind(prefix('label-font-family'), fontFamilyRow, 'selected', Gio.SettingsBindFlags.DEFAULT);
 
 
         const customFontFamilyRow = new Adw.EntryRow({
             title: _('Custom Font Family'),
-            text: settings.get_string('label-custom-font-family'),
+            text: settings.get_string(prefix('label-custom-font-family')),
         });
         customFontFamilyRow.add_css_class('property');
         customFontFamilyRow.set_tooltip_text(_('Used when Font Family is set to Custom'));
 
-        labelGroup.add(customFontFamilyRow);
+        group.add(customFontFamilyRow);
         settings.bind(
-            'label-custom-font-family',
+            prefix('label-custom-font-family'),
             customFontFamilyRow,
             'text',
             Gio.SettingsBindFlags.DEFAULT
@@ -67,12 +67,10 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
         SliderPercentagesPreferences.createSwitchRow({
             title: 'Include Percentage Symbol',
             subtitle: 'Add the percentage symbol next to the label',
-            group: labelGroup,
+            group,
             settings,
-            key: 'label-include-percentage-symbol',
+            key: prefix('label-include-percentage-symbol'),
         });
-
-        return labelGroup;
     }
 
     private static createSwitchRow({ title, subtitle, group, settings, key }: {
@@ -124,6 +122,12 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             key: 'quick-settings-brightness'
         });
 
+        SliderPercentagesPreferences.createLabelPrefsRows({
+            settings,
+            group: quickSettingsGroup,
+            optionKeyPrefix: 'quick-settings-'
+        });
+
         // OSD group
         const osdGroup = new Adw.PreferencesGroup({
             title: _('On-Screen Display'),
@@ -157,13 +161,14 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             key: 'osd-keyboard-backlight'
         });
 
-        // Label Group
+        SliderPercentagesPreferences.createLabelPrefsRows({
+            settings,
+            group: osdGroup,
+            optionKeyPrefix: 'osd-'
+        });
 
-        const labelGroup = SliderPercentagesPreferences.createLabelPrefsGroup(settings);
-        page.add(labelGroup);
 
         window.add(page);
-
         return Promise.resolve();
     }
 }

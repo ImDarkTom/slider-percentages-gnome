@@ -11,6 +11,30 @@
       <summary>Quick Settings: Brightness Slider</summary>
       <description>Show a brightness percentage label next to the brightness slider in the quick settings.</description>
     </key>
+    
+    <key name="quick-settings-label-font-weight" type="i">
+      <default>3</default>
+      <range min="0" max="9" />
+      <summary>Quick Settings Label: Font Weight</summary>
+      <description>Font weight for quick settings labels. Integer value 0 to 9 representing selected weight entry index.</description>
+    </key>
+    <key name="quick-settings-label-font-family" type="i">
+      <default>0</default>
+      <range min="0" max="4" />
+      <summary>Quick Settings Label: Font Family</summary>
+      <description>Font family for quick settings labels. Integer value 0 to 4 representing selected family entry index.</description>
+    </key>
+    <key name="quick-settings-label-custom-font-family" type="s">
+      <default>''</default>
+      <summary>Quick Settings Label: Custom Font Family</summary>
+      <description>Custom font family for quick settings labels when the custom family option is selected.</description>
+    </key>
+    <key name="quick-settings-label-include-percentage-symbol" type="b">
+      <default>true</default>
+      <summary>Quick Settings Label: Include Percentage Symbol</summary>
+      <description>Include a percentage symbol next to the quick settings label value.</description>
+    </key>
+
     <key name="osd-volume" type="b">
       <default>true</default>
       <summary>OSD: Volume Popup</summary>
@@ -26,27 +50,28 @@
       <summary>OSD: Keyboard Backlight Popup</summary>
       <description>Show a brightness percentage next to the OSD keyboard backlight popup.</description>
     </key>
-    <key name="label-font-weight" type="i">
+
+    <key name="osd-label-font-weight" type="i">
       <default>3</default>
       <range min="0" max="9" />
-      <summary>Label: Font Weight</summary>
-      <description>Font weight for percentage labels. Integer value 0 to 9 representing selected weight entry index.</description>
+      <summary>Quick Settings Label: Font Weight</summary>
+      <description>Font weight for quick settings labels. Integer value 0 to 9 representing selected weight entry index.</description>
     </key>
-    <key name="label-font-family" type="i">
+    <key name="osd-label-font-family" type="i">
       <default>0</default>
       <range min="0" max="4" />
-      <summary>Label: Font Family</summary>
-      <description>Font family for percentage labels. Integer value 0 to 4 representing selected family entry index.</description>
+      <summary>Quick Settings Label: Font Family</summary>
+      <description>Font family for quick settings labels. Integer value 0 to 4 representing selected family entry index.</description>
     </key>
-    <key name="label-custom-font-family" type="s">
+    <key name="osd-label-custom-font-family" type="s">
       <default>''</default>
-      <summary>Label: Custom Font Family</summary>
-      <description>Custom font family for percentage labels when the custom family option is selected.</description>
+      <summary>Quick Settings Label: Custom Font Family</summary>
+      <description>Custom font family for quick settings labels when the custom family option is selected.</description>
     </key>
-    <key name="label-include-percentage-symbol" type="b">
+    <key name="osd-label-include-percentage-symbol" type="b">
       <default>true</default>
-      <summary>Label: Include Percentage Symbol</summary>
-      <description>Include a percentage symbol next to the label value.</description>
+      <summary>Quick Settings Label: Include Percentage Symbol</summary>
+      <description>Include a percentage symbol next to the quick setting label value.</description>
     </key>
   </schema>
 </schemalist>

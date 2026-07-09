@@ -14,9 +14,12 @@ class PercentageLabel {
     private includePercentageSymbol: boolean;
     private currentPercentage: number | null = null;
 
-    constructor(settings: Gio.Settings) {
+    private settingPrefix: string;
+
+    constructor(settings: Gio.Settings, settingPrefix: string) {
         this.settings = settings;
-        this.includePercentageSymbol = this.settings.get_boolean('label-include-percentage-symbol');
+        this.settingPrefix = settingPrefix;
+        this.includePercentageSymbol = this.settings.get_boolean(this.prefix('label-include-percentage-symbol'));
 
         this.label = new St.Label({
             text: '--%',
@@ -27,11 +30,11 @@ class PercentageLabel {
         this.updateStyle();
 
         this.settings.connectObject(
-            'changed::label-font-weight', () => this.updateStyle(),
-            'changed::label-font-family', () => this.updateStyle(),
-            'changed::label-custom-font-family', () => this.updateStyle(),
-            'changed::label-include-percentage-symbol', () => {
-                this.includePercentageSymbol = this.settings.get_boolean('label-include-percentage-symbol');
+            `changed::${this.prefix('label-font-weight')}`, () => this.updateStyle(),
+            `changed::${this.prefix('label-font-family')}`, () => this.updateStyle(),
+            `changed::${this.prefix('label-custom-font-family')}`, () => this.updateStyle(),
+            `changed::${this.prefix('label-include-percentage-symbol')}`, () => {
+                this.includePercentageSymbol = this.settings.get_boolean(this.prefix('label-include-percentage-symbol'));
                 this.label.text = this.formatPercentage();
             },
             this
@@ -60,9 +63,13 @@ class PercentageLabel {
         this.label.destroy();
     }
 
+    private prefix(key: string) {
+        return `${this.settingPrefix}${key}`;
+    }
+
     private updateStyle() {
         const weights = [100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
-        const weight = weights[this.settings.get_int('label-font-weight')] ?? 400;
+        const weight = weights[this.settings.get_int(this.prefix('label-font-weight'))] ?? 400;
 
         const fontFamily = this.fontFamily();
 
@@ -73,7 +80,7 @@ class PercentageLabel {
             ${fontFamily ? `font-family: ${fontFamily};`: ''}
         `;
 
-        const newIncludePercentageSymbol = this.settings.get_boolean('label-include-percentage-symbol');
+        const newIncludePercentageSymbol = this.settings.get_boolean(this.prefix('label-include-percentage-symbol'));
         if (newIncludePercentageSymbol !== this.includePercentageSymbol) {
             this.includePercentageSymbol = newIncludePercentageSymbol;
 
@@ -84,12 +91,12 @@ class PercentageLabel {
 
     private fontFamily(): string | null {
         const families = [null, 'sans-serif', 'serif', 'monospace'];
-        const selected = this.settings.get_int('label-font-family');
+        const selected = this.settings.get_int(this.prefix('label-font-family'));
 
         if (selected !== 4) {
             return families[selected] ?? families[0];
         } else {
-            const customFamily = this.settings.get_string('label-custom-font-family').trim();
+            const customFamily = this.settings.get_string(this.prefix('label-custom-font-family')).trim();
 
             if (!customFamily)
             return families[0];
@@ -186,7 +193,7 @@ class OsdLabels {
 
     private labelFor(osd: any): PercentageLabel {
         if (!osd._percentLabel) {
-            osd._percentLabel = new PercentageLabel(this.settings);
+            osd._percentLabel = new PercentageLabel(this.settings, 'osd-');
 
             // add label to horizontal layout, 
             // layout becomes: [icon] [title + level bar] [percentage]
@@ -236,7 +243,7 @@ class QuickSettingsVolumeLabel {
 
         // Lazily add after Quick Settings is build
         this.idleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-            this.label = new PercentageLabel(this.settings);
+            this.label = new PercentageLabel(this.settings, 'quick-settings-');
 
             this.label.bindAttribute('quick-settings-volume', 'visible');
 
@@ -311,7 +318,7 @@ class QuickSettingsBrightnessLabel {
     enable() {
         // Lazily add after Quick Settings is built
         this.idleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-            this.label = new PercentageLabel(this.settings);
+            this.label = new PercentageLabel(this.settings, 'quick-settings-');
 
             this.label.bindAttribute('quick-settings-brightness', 'visible');
 

@@ -1,7 +1,7 @@
 NAME = slider-percentages
 UUID = $(NAME)@imdarktom
 
-.PHONY: all pack install clean test-shell
+.PHONY: all pack install clean test-shell shexli
 
 all: dist/extension.js
 
@@ -27,3 +27,6 @@ clean:
 
 test-shell: install
 	dbus-run-session gnome-shell --devkit --wayland
+
+shexli: pack
+	./venv/bin/python -m shexli "./build/$(UUID).zip"

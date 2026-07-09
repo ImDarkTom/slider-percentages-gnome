@@ -2,7 +2,7 @@ import St from 'gi://St';
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import Gvc from 'gi://Gvc';
-import Gio from "gi://Gio";
+import Gio from 'gi://Gio';
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
@@ -21,9 +21,12 @@ class PercentageLabel {
             style: 'min-width: 3em; text-align: right;',
         });
 
+        this.updateStyle();
+
         this.settings.connectObject(
-            'changed::label-font-weight',
-            () => this.updateStyle(),
+            'changed::label-font-weight', () => this.updateStyle(),
+            'changed::label-font-family', () => this.updateStyle(),
+            'changed::label-custom-font-family', () => this.updateStyle(),
             this
         );
     }
@@ -52,12 +55,36 @@ class PercentageLabel {
     private updateStyle() {
         const weights = [100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
         const weight = weights[this.settings.get_int('label-font-weight')] ?? 400;
+        const fontFamily = this.fontFamily();
 
         this.label.style = `
             min-width: 3em;
             text-align: right;
             font-weight: ${weight};
-        `
+            font-family: ${fontFamily};
+        `;
+    }
+
+    private fontFamily(): string {
+        const families = ['sans-serif', 'serif', 'monospace'];
+        const selected = this.settings.get_int('label-font-family');
+
+        if (selected !== 3) {
+            return families[selected] ?? families[0];
+        } else {
+            const customFamily = this.settings.get_string('label-custom-font-family').trim();
+
+            if (!customFamily)
+            return families[0];
+
+            // Safe apostrophe
+            const formattedFamily = customFamily
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'");
+
+            // Wrap in quotes to allow for names with spaces
+            return `'${formattedFamily}'`;
+        }
     }
 }
 
@@ -138,7 +165,7 @@ class OsdLabels {
 
             // add label to horizontal layout, 
             // layout becomes: [icon] [title + level bar] [percentage]
-            osd._hbox.add_child(osd._percentLabel);
+            osd._hbox.add_child(osd._percentLabel.rawLabel);
         }
 
         return osd._percentLabel;

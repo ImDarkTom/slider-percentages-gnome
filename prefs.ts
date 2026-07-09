@@ -10,6 +10,8 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             description: _('Customise the added label'),
         });
 
+
+        // Font weight
         const fontWeightRow = new Adw.ComboRow({
             title: _('Font Weight'),
             subtitle: _('How heavy the font is'),
@@ -30,6 +32,42 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
         labelGroup.add(fontWeightRow);
 
         settings.bind('label-font-weight', fontWeightRow, 'selected', Gio.SettingsBindFlags.DEFAULT);
+
+
+        // Font Family
+        const fontFamilyRow = new Adw.ComboRow({
+            title: _('Font Family'),
+            subtitle: _('Which font family the labels use'),
+            model: Gtk.StringList.new([
+                _('System Default (sans-serif)'),
+                _('Serif'),
+                _('Monospace'),
+                _('Custom'),
+            ]),
+        });
+
+        labelGroup.add(fontFamilyRow);
+
+        settings.bind('label-font-family', fontFamilyRow, 'selected', Gio.SettingsBindFlags.DEFAULT);
+
+
+        // Custom font family
+        const customFontFamilyRow = new Adw.EntryRow({
+            title: _('Custom Font Family'),
+            text: settings.get_string('label-custom-font-family'),
+        });
+
+        customFontFamilyRow.add_css_class('property');
+        customFontFamilyRow.set_tooltip_text(_('Used when Font Family is set to Custom'));
+
+        labelGroup.add(customFontFamilyRow);
+
+        settings.bind(
+            'label-custom-font-family',
+            customFontFamilyRow,
+            'text',
+            Gio.SettingsBindFlags.DEFAULT
+        );
 
         return labelGroup;
     }

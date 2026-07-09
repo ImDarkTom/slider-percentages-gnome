@@ -32,5 +32,16 @@
       <summary>Label: Font Weight</summary>
       <description>Font weight for percentage labels. Integer value 0 to 9 representing selected weight entry index.</description>
     </key>
+    <key name="label-font-family" type="i">
+      <default>0</default>
+      <range min="0" max="3" />
+      <summary>Label: Font Family</summary>
+      <description>Font family for percentage labels. Integer value 0 to 3 representing selected family entry index.</description>
+    </key>
+    <key name="label-custom-font-family" type="s">
+      <default>''</default>
+      <summary>Label: Custom Font Family</summary>
+      <description>Custom font family for percentage labels when the custom family option is selected.</description>
+    </key>
   </schema>
 </schemalist>

@@ -11,9 +11,12 @@ import { QuickSlider } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 class PercentageLabel {
     private label: St.Label;
     private settings: Gio.Settings;
+    private includePercentageSymbol: boolean;
+    private currentPercentage: number | null = null;
 
     constructor(settings: Gio.Settings) {
         this.settings = settings;
+        this.includePercentageSymbol = this.settings.get_boolean('label-include-percentage-symbol');
 
         this.label = new St.Label({
             text: '--%',
@@ -27,6 +30,10 @@ class PercentageLabel {
             'changed::label-font-weight', () => this.updateStyle(),
             'changed::label-font-family', () => this.updateStyle(),
             'changed::label-custom-font-family', () => this.updateStyle(),
+            'changed::label-include-percentage-symbol', () => {
+                this.includePercentageSymbol = this.settings.get_boolean('label-include-percentage-symbol');
+                this.label.text = this.formatPercentage();
+            },
             this
         );
     }
@@ -36,7 +43,8 @@ class PercentageLabel {
     }
 
     set percentage(value: number) {
-        this.label.text = `${value}%`;
+        this.currentPercentage = value;
+        this.label.text = this.formatPercentage();
     }
 
     set visible(value: boolean) {
@@ -55,6 +63,7 @@ class PercentageLabel {
     private updateStyle() {
         const weights = [100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
         const weight = weights[this.settings.get_int('label-font-weight')] ?? 400;
+
         const fontFamily = this.fontFamily();
 
         this.label.style = `
@@ -63,6 +72,14 @@ class PercentageLabel {
             font-weight: ${weight};
             ${fontFamily ? `font-family: ${fontFamily};`: ''}
         `;
+
+        const newIncludePercentageSymbol = this.settings.get_boolean('label-include-percentage-symbol');
+        if (newIncludePercentageSymbol !== this.includePercentageSymbol) {
+            this.includePercentageSymbol = newIncludePercentageSymbol;
+
+            // Extract raw number and update
+            this.percentage = Number(this.rawLabel.text.replace(/\%/, ''));
+        }
     }
 
     private fontFamily(): string | null {
@@ -84,6 +101,14 @@ class PercentageLabel {
 
             // Wrap in quotes to allow for names with spaces
             return `'${formattedFamily}'`;
+        }
+    }
+
+    private formatPercentage() {
+        if (this.currentPercentage === null) {
+            return this.includePercentageSymbol ? '--%' : '--';
+        } else {
+            return `${this.currentPercentage}${this.includePercentageSymbol ? '%' : ''}`;
         }
     }
 }

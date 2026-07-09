@@ -70,6 +70,17 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             Gio.SettingsBindFlags.DEFAULT
         );
 
+        // Include percentage symbol
+        const labelPercentageSymbol = new Adw.SwitchRow({
+            title: _('Include Percentage Symbol'),
+            subtitle: _('Add the percentage symbol next to the label.'),
+        });
+
+        labelGroup.add(labelPercentageSymbol);
+
+        settings.bind('label-include-percentage-symbol', labelPercentageSymbol, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+
         return labelGroup;
     }
 

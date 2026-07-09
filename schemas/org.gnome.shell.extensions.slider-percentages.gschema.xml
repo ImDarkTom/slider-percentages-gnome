@@ -43,5 +43,10 @@
       <summary>Label: Custom Font Family</summary>
       <description>Custom font family for percentage labels when the custom family option is selected.</description>
     </key>
+    <key name="label-include-percentage-symbol" type="b">
+      <default>true</default>
+      <summary>Label: Include Percentage Symbol</summary>
+      <description>Include a percentage symbol next to the label value.</description>
+    </key>
   </schema>
 </schemalist>

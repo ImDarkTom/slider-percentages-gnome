@@ -8,6 +8,59 @@ import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { QuickSlider } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 
+class PercentageLabel {
+    private label: St.Label;
+    private settings: Gio.Settings;
+
+    constructor(settings: Gio.Settings) {
+        this.settings = settings;
+
+        this.label = new St.Label({
+            text: '--%',
+            y_align: Clutter.ActorAlign.CENTER,
+            style: 'min-width: 3em; text-align: right;',
+        });
+
+        this.settings.connectObject(
+            'changed::label-font-weight',
+            () => this.updateStyle(),
+            this
+        );
+    }
+
+    get rawLabel() {
+        return this.label;
+    }
+
+    set percentage(value: number) {
+        this.label.text = `${value}%`;
+    }
+
+    set visible(value: boolean) {
+        this.label.visible = value;
+    }
+
+    bindAttribute(key: string, labelProperty: string) {
+        this.settings.bind(key, this.label, labelProperty, Gio.SettingsBindFlags.DEFAULT);
+    }
+
+    destroy() {
+        this.settings.disconnectObject(this);
+        this.label.destroy();
+    }
+
+    private updateStyle() {
+        const weights = [100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+        const weight = weights[this.settings.get_int('label-font-weight')] ?? 400;
+
+        this.label.style = `
+            min-width: 3em;
+            text-align: right;
+            font-weight: ${weight};
+        `
+    }
+}
+
 /**
  * Shows percentages next to (supported) GNOME OSD popups.
  *
@@ -72,20 +125,16 @@ class OsdLabels {
                 ? value / max 
                 : value;
 
-            label.text = `${Math.round(fraction * 100)}%`;
+            label.percentage = Math.round(fraction * 100);
             label.visible = true;
         } else {
             label.visible = false;
         }
     }
 
-    private labelFor(osd: any): St.Label {
+    private labelFor(osd: any): PercentageLabel {
         if (!osd._percentLabel) {
-            osd._percentLabel = new St.Label({
-                text: '--%',
-                y_align: Clutter.ActorAlign.CENTER,
-                style: 'min-width: 3em; text-align: right;',
-            });
+            osd._percentLabel = new PercentageLabel(this.settings);
 
             // add label to horizontal layout, 
             // layout becomes: [icon] [title + level bar] [percentage]
@@ -116,7 +165,7 @@ class QuickSettingsVolumeLabel {
 
     private mixer?: Gvc.MixerControl;
     private sink?: Gvc.MixerStream;
-    private label?: St.Label;
+    private label?: PercentageLabel;
     private idleId = 0;
 
     constructor(settings: Gio.Settings, mixerName: string) {
@@ -135,15 +184,9 @@ class QuickSettingsVolumeLabel {
 
         // Lazily add after Quick Settings is build
         this.idleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-            this.label = new St.Label({
-                text: '--%',
-                y_align: Clutter.ActorAlign.CENTER,
-                style: 'min-width: 3em; text-align: right;',
-            });
+            this.label = new PercentageLabel(this.settings);
 
-            this.settings?.bind('quick-settings-volume', this.label, 'visible',
-                Gio.SettingsBindFlags.DEFAULT
-            );
+            this.label.bindAttribute('quick-settings-volume', 'visible');
 
             const quickSettingsMenu = Main.panel.statusArea.quickSettings.menu;
 
@@ -153,7 +196,7 @@ class QuickSettingsVolumeLabel {
             }
 
             // [mute button] [slider] [<our inserted label>] [settings button]
-            sliderRow.insert_child_at_index(this.label, 2);
+            sliderRow.insert_child_at_index(this.label.rawLabel, 2);
 
             this.updateLabel();
 
@@ -198,14 +241,14 @@ class QuickSettingsVolumeLabel {
         if (!this.label || !this.sink || !this.mixer) return;
 
         const volumePercent = Math.round(this.sink.get_volume() / this.mixer.get_vol_max_norm() * 100);
-        this.label.text = this.sink.get_is_muted() ? '0%' : `${volumePercent}%`;
+        this.label.percentage = this.sink.get_is_muted() ? 0 : volumePercent;
     }
 }
 
 class QuickSettingsBrightnessLabel {
     private readonly settings: Gio.Settings;
 
-    private label?: St.Label;
+    private label?: PercentageLabel;
     private slider?: QuickSlider['slider'];
     private idleId = 0;
 
@@ -216,15 +259,9 @@ class QuickSettingsBrightnessLabel {
     enable() {
         // Lazily add after Quick Settings is built
         this.idleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-            this.label = new St.Label({
-                text: '--%',
-                y_align: Clutter.ActorAlign.CENTER,
-                style: 'min-width: 3em; text-align: right;',
-            });
+            this.label = new PercentageLabel(this.settings);
 
-            this.settings?.bind('quick-settings-brightness', this.label, 'visible',
-                Gio.SettingsBindFlags.DEFAULT
-            );
+            this.label.bindAttribute('quick-settings-brightness', 'visible');
 
             const qsBrightnessIndicator = Main.panel.statusArea.quickSettings._brightness;
             const qsBrightnessItem = qsBrightnessIndicator?.quickSettingsItems?.[0] as QuickSlider | undefined;
@@ -241,7 +278,7 @@ class QuickSettingsBrightnessLabel {
             }
 
             // [brightness icon] [slider] [<our inserted label>]
-            sliderRow.insert_child_at_index(this.label, 2);
+            sliderRow.insert_child_at_index(this.label.rawLabel, 2);
 
             this.slider = qsBrightnessItem.slider;
             this.slider.connectObject('notify::value',
@@ -273,7 +310,7 @@ class QuickSettingsBrightnessLabel {
         if (!this.label) return;
 
         const brightnessPercent = Math.round(newValue * 100);
-        this.label.text = `${brightnessPercent}%`;
+        this.label.percentage = brightnessPercent;
     }
 }
 

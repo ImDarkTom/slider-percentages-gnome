@@ -1,10 +1,41 @@
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import Gtk from 'gi://Gtk';
 
 export default class SliderPercentagesPreferences extends ExtensionPreferences {
+    static createLabelPrefsGroup(settings: Gio.Settings): Adw.PreferencesGroup {
+        const labelGroup = new Adw.PreferencesGroup({
+            title: _('Label'),
+            description: _('Customise the added label'),
+        });
+
+        const fontWeightRow = new Adw.ComboRow({
+            title: _('Font Weight'),
+            subtitle: _('How heavy the font is'),
+            model: Gtk.StringList.new([
+                _('Thin (100)'),
+                _('Extra Light (200)'),
+                _('Light (300)'),
+                _('Normal (400)'),
+                _('Medium (500)'),
+                _('Semi Bold (600)'),
+                _('Bold (700)'),
+                _('Extra Bold (800)'),
+                _('Black (900)'),
+                _('Extra Black (950)'),
+            ]),
+        });
+
+        labelGroup.add(fontWeightRow);
+
+        settings.bind('label-font-weight', fontWeightRow, 'selected', Gio.SettingsBindFlags.DEFAULT);
+
+        return labelGroup;
+    }
+
     fillPreferencesWindow(window: Adw.PreferencesWindow): Promise<void> {
-        const settings  = this.getSettings();
+        const settings = this.getSettings();
 
         const page = new Adw.PreferencesPage({
             title: _('General'),
@@ -64,7 +95,13 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
 
         osdGroup.add(osdKeyboardBacklightEnabled);
 
-        window.add(page)
+        // Label Group
+
+        const labelGroup = SliderPercentagesPreferences.createLabelPrefsGroup(settings);
+
+        page.add(labelGroup);
+
+        window.add(page);
 
         settings.bind('quick-settings-volume', quickSettingsVolumeEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
         settings.bind('quick-settings-brightness', quickSettingsBrightnessEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);

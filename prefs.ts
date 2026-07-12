@@ -88,6 +88,28 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             settings,
             key: prefix('label-include-percentage-symbol'),
         });
+
+        const buttonRow = new Adw.ButtonRow({
+            title: _('Reset Label To Default'),
+        });
+
+        const resetButtonActivateListenerId = buttonRow.connect('activated', () => {
+            for (const key of [
+                'label-font-weight',
+                'label-font-family',
+                'label-custom-font-family',
+                'label-include-percentage-symbol',
+            ]) {
+                settings.reset(prefix(key));
+            }
+        });
+
+        const resetButtonDestroyListenerId = buttonRow.connect('destroy', () => {
+            buttonRow.disconnect(resetButtonActivateListenerId);
+            buttonRow.disconnect(resetButtonDestroyListenerId);
+        })
+
+        group.add(buttonRow);
     }
 
     private static createSwitchRow({ title, subtitle, group, settings, key }: {

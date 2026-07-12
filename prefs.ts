@@ -55,6 +55,24 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
         customFontFamilyRow.add_css_class('property');
         customFontFamilyRow.set_tooltip_text(_('Used when Font Family is set to Custom'));
 
+        const updateCustomFontFamilyVisibility = () => {
+            customFontFamilyRow.visible = fontFamilyRow.selected === 4;
+        };
+
+        let fontFamilySelectionChangedId: number | null = fontFamilyRow.connect(
+            'notify::selected',
+            updateCustomFontFamilyVisibility
+        );
+        customFontFamilyRow.connect('destroy', () => {
+            if (fontFamilySelectionChangedId === null) {
+                return;
+            }
+
+            fontFamilyRow.disconnect(fontFamilySelectionChangedId);
+            fontFamilySelectionChangedId = null;
+        });
+        updateCustomFontFamilyVisibility();
+
         group.add(customFontFamilyRow);
         settings.bind(
             prefix('label-custom-font-family'),

@@ -89,6 +89,23 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
         settings.bind(key, switchRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     }
 
+    private static createDividerRow(group: Adw.PreferencesGroup) {
+        const separator = new Gtk.Separator({
+            orientation: Gtk.Orientation.HORIZONTAL,
+            marginStart: 12,
+            marginEnd: 12,
+        });
+
+        const row = new Adw.PreferencesRow({
+            activatable: false,
+            selectable: false,
+        });
+        
+        row.set_child(separator);
+
+        group.add(separator);
+    }
+
     fillPreferencesWindow(window: Adw.PreferencesWindow): Promise<void> {
         const settings = this.getSettings();
 
@@ -122,6 +139,7 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             key: 'quick-settings-brightness'
         });
 
+        SliderPercentagesPreferences.createDividerRow(quickSettingsGroup);
         SliderPercentagesPreferences.createLabelPrefsRows({
             settings,
             group: quickSettingsGroup,
@@ -161,6 +179,7 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             key: 'osd-keyboard-backlight'
         });
 
+        SliderPercentagesPreferences.createDividerRow(osdGroup);
         SliderPercentagesPreferences.createLabelPrefsRows({
             settings,
             group: osdGroup,

@@ -59,18 +59,17 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             customFontFamilyRow.visible = fontFamilyRow.selected === 4;
         };
 
-        let fontFamilySelectionChangedId: number | null = fontFamilyRow.connect(
-            'notify::selected',
-            updateCustomFontFamilyVisibility
+        const fontFamilyListenerId = fontFamilyRow.connect('notify::selected', updateCustomFontFamilyVisibility);
+        
+        // Once the row is destroyed, also disconnect the listener
+        const customFontListenerId = customFontFamilyRow.connect(
+            'destroy', 
+            () => {
+                fontFamilyRow.disconnect(fontFamilyListenerId);
+                customFontFamilyRow.disconnect(customFontListenerId);
+            },
         );
-        customFontFamilyRow.connect('destroy', () => {
-            if (fontFamilySelectionChangedId === null) {
-                return;
-            }
 
-            fontFamilyRow.disconnect(fontFamilySelectionChangedId);
-            fontFamilySelectionChangedId = null;
-        });
         updateCustomFontFamilyVisibility();
 
         group.add(customFontFamilyRow);

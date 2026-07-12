@@ -121,7 +121,7 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
         
         row.set_child(separator);
 
-        group.add(separator);
+        group.add(row);
     }
 
     fillPreferencesWindow(window: Adw.PreferencesWindow): Promise<void> {

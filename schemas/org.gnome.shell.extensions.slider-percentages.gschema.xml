@@ -11,7 +11,6 @@
       <summary>Quick Settings: Brightness Slider</summary>
       <description>Show a brightness percentage label next to the brightness slider in the quick settings.</description>
     </key>
-    
     <key name="quick-settings-label-font-weight" type="i">
       <default>3</default>
       <range min="0" max="9" />
@@ -34,7 +33,6 @@
       <summary>Quick Settings Label: Include Percentage Symbol</summary>
       <description>Include a percentage symbol next to the quick settings label value.</description>
     </key>
-
     <key name="osd-volume" type="b">
       <default>true</default>
       <summary>OSD: Volume Popup</summary>
@@ -50,28 +48,27 @@
       <summary>OSD: Keyboard Backlight Popup</summary>
       <description>Show a brightness percentage next to the OSD keyboard backlight popup.</description>
     </key>
-
     <key name="osd-label-font-weight" type="i">
       <default>3</default>
       <range min="0" max="9" />
-      <summary>Quick Settings Label: Font Weight</summary>
-      <description>Font weight for quick settings labels. Integer value 0 to 9 representing selected weight entry index.</description>
+      <summary>OSD Label: Font Weight</summary>
+      <description>Font weight for OSD labels. Integer value 0 to 9 representing selected weight entry index.</description>
     </key>
     <key name="osd-label-font-family" type="i">
       <default>0</default>
       <range min="0" max="4" />
-      <summary>Quick Settings Label: Font Family</summary>
-      <description>Font family for quick settings labels. Integer value 0 to 4 representing selected family entry index.</description>
+      <summary>OSD Label: Font Family</summary>
+      <description>Font family for OSD labels. Integer value 0 to 4 representing selected family entry index.</description>
     </key>
     <key name="osd-label-custom-font-family" type="s">
       <default>''</default>
-      <summary>Quick Settings Label: Custom Font Family</summary>
-      <description>Custom font family for quick settings labels when the custom family option is selected.</description>
+      <summary>OSD Label: Custom Font Family</summary>
+      <description>Custom font family for OSD labels when the custom family option is selected.</description>
     </key>
     <key name="osd-label-include-percentage-symbol" type="b">
       <default>true</default>
-      <summary>Quick Settings Label: Include Percentage Symbol</summary>
-      <description>Include a percentage symbol next to the quick setting label value.</description>
+      <summary>OSD Label: Include Percentage Symbol</summary>
+      <description>Include a percentage symbol next to the OSD label value.</description>
     </key>
   </schema>
 </schemalist>

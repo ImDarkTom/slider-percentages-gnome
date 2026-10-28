@@ -75,4 +75,4 @@ The following GNOME versions have been tested and are supported:
 
 ## License
 
-[AGPL-3.0](https://github.com/user-attachments/assets/07590f28-837d-4520-b807-820dbc4ca81a)
+[GPL-3.0](https://github.com/ImDarkTom/slider-percentages-gnome/blob/main/LICENSE)

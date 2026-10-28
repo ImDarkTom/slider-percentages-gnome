@@ -71,6 +71,7 @@ The following GNOME versions have been tested and are supported:
 * 48
 * 49
 * 50
+* 51
 
 ## License
 

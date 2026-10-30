@@ -311,7 +311,8 @@ class QuickSettingsVolumeLabel {
 
         const sliderRow = quickSettings.menu._grid.get_children()[1].get_first_child();
         if (!sliderRow) {
-            throw new Error('Failed to find volume slider in quick settings.');
+            console.warn('[slider-percentages] Failed to find volume slider in quick settings')
+            return;
         }
 
         // [mute button] [slider] [<our inserted label>] [settings button]

@@ -333,53 +333,24 @@ class QuickSettingsBrightnessLabel {
 
     private label?: PercentageLabel;
     private slider?: QuickSlider['slider'];
-    private idleId = 0;
+    private sourceId = 0;
 
     constructor(settings: Gio.Settings) {
         this.settings = settings;
     }
 
     enable() {
-        // Lazily add after Quick Settings is built
-        this.idleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-            this.label = new PercentageLabel(this.settings, 'quick-settings-');
-
-            this.label.bindAttribute('quick-settings-brightness', 'visible');
-
-            const qsBrightnessIndicator = Main.panel.statusArea.quickSettings._brightness;
-            const qsBrightnessItem = qsBrightnessIndicator?.quickSettingsItems?.[0] as QuickSlider | undefined;
-            if (!qsBrightnessItem) {
-                // Device/displays don't support custom brightness
-                this.idleId = 0;
-                return GLib.SOURCE_REMOVE;
-            }
-
-            const sliderRow = qsBrightnessItem.get_first_child();
-            if (!sliderRow) {
-                this.idleId = 0;
-                return GLib.SOURCE_REMOVE;
-            }
-
-            // [brightness icon] [slider] [<our inserted label>]
-            sliderRow.insert_child_at_index(this.label.rawLabel, 2);
-
-            this.slider = qsBrightnessItem.slider;
-            this.slider.connectObject('notify::value',
-                () => this.updateLabel(this.slider!.value),
-                this
-            );
-
-            this.updateLabel(this.slider.value);
-
-            this.idleId = 0;
-            return GLib.SOURCE_REMOVE;
+        this.sourceId = whenQuickSettingsReady((quickSettings) => {
+            this.sourceId = 0;
+            if (quickSettings) this.addLabel(quickSettings);
+            
         });
     }
 
     disable() {
-        if (this.idleId) {
-            GLib.source_remove(this.idleId);
-            this.idleId = 0;
+        if (this.sourceId) {
+            GLib.source_remove(this.sourceId);
+            this.sourceId = 0;
         }
 
         this.slider?.disconnectObject(this);
@@ -387,6 +358,34 @@ class QuickSettingsBrightnessLabel {
 
         this.label?.destroy();
         this.label = undefined;
+    }
+
+    private addLabel(quickSettings: QuickSettings) {
+        this.label = new PercentageLabel(this.settings, 'quick-settings-');
+        this.label.bindAttribute('quick-settings-brightness', 'visible');
+
+        const qsBrightnessIndicator = quickSettings._brightness;
+        const qsBrightnessItem = qsBrightnessIndicator?.quickSettingsItems?.[0] as QuickSlider | undefined;
+        if (!qsBrightnessItem) {
+            // Device/displays don't support custom brightness
+            return;
+        }
+
+        const sliderRow = qsBrightnessItem.get_first_child();
+        if (!sliderRow) {
+            return;
+        }
+
+        // [brightness icon] [slider] [<our inserted label>]
+        sliderRow.insert_child_at_index(this.label.rawLabel, 2);
+
+        this.slider = qsBrightnessItem.slider;
+        this.slider.connectObject('notify::value',
+            () => this.updateLabel(this.slider!.value),
+            this
+        );
+
+        this.updateLabel(this.slider.value);
     }
 
     private updateLabel(newValue: number) {

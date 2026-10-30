@@ -89,11 +89,7 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             key: prefix('label-include-percentage-symbol'),
         });
 
-        const buttonRow = new Adw.ButtonRow({
-            title: _('Reset Label To Default'),
-        });
-
-        const resetButtonActivateListenerId = buttonRow.connect('activated', () => {
+        const resetLabel = () => {
             for (const key of [
                 'label-font-weight',
                 'label-font-family',
@@ -102,14 +98,42 @@ export default class SliderPercentagesPreferences extends ExtensionPreferences {
             ]) {
                 settings.reset(prefix(key));
             }
-        });
+        };
 
-        const resetButtonDestroyListenerId = buttonRow.connect('destroy', () => {
-            buttonRow.disconnect(resetButtonActivateListenerId);
-            buttonRow.disconnect(resetButtonDestroyListenerId);
-        })
+        // `Adw.ButtonRow` needs libadwaita>=1.6 (GNOME 47)
+        if (Adw.get_minor_version() >= 6) {
+            const buttonRow = new Adw.ButtonRow({
+                title: _('Reset Label To Default'),
+            });
 
-        group.add(buttonRow);
+            const resetButtonActivateListenerId = buttonRow.connect('activated', () => resetLabel);
+
+            const resetButtonDestroyListenerId = buttonRow.connect('destroy', () => {
+                buttonRow.disconnect(resetButtonActivateListenerId);
+                buttonRow.disconnect(resetButtonDestroyListenerId);
+            });
+
+            group.add(buttonRow);
+        } else {
+            const button = new Gtk.Button({
+                label: _('Reset'),
+                valign: Gtk.Align.CENTER,
+            });
+
+            const resetButtonClickedListenerId = button.connect('clicked', resetLabel);
+
+            const resetButtonDestroyListenerId = button.connect('destroy', () => {
+                button.disconnect(resetButtonClickedListenerId);
+                button.disconnect(resetButtonDestroyListenerId);
+            });
+
+            const actionRow = new Adw.ActionRow({
+                title: _('Reset Label To Default'),
+            });
+            actionRow.add_suffix(button);
+            
+            group.add(actionRow);
+        }
     }
 
     private static createSwitchRow({ title, subtitle, group, settings, key }: {

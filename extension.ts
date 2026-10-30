@@ -7,6 +7,7 @@ import Gio from 'gi://Gio';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { QuickSlider } from 'resource:///org/gnome/shell/ui/quickSettings.js';
+import type { QuickSettings } from 'resource:///org/gnome/shell/ui/panel.js';
 
 class PercentageLabel {
     private label: St.Label;
@@ -218,6 +219,31 @@ class OsdLabels {
     }
 }
 
+function whenQuickSettingsReady(callback: (quickSettings: QuickSettings | null) => void): number {
+    const quickSettings = Main.panel.statusArea.quickSettings;
+    const isReady = () => !!quickSettings._volumeOutput;
+
+    if (isReady()) {
+        callback(quickSettings);
+        return 0;
+    }
+
+    let attempts = 0;
+
+    return GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+        if (isReady()) {
+            callback(quickSettings);
+        } else if (++attempts >= 50) {
+            console.warn('[slider-percentages] Quick Settings indicators not found, giving up');
+            callback(null);
+        } else {
+            return GLib.SOURCE_CONTINUE;
+        }
+
+        return GLib.SOURCE_REMOVE;
+    });
+}
+
 class QuickSettingsVolumeLabel {
     private readonly settings: Gio.Settings;
     private readonly mixerName: string;
@@ -225,7 +251,7 @@ class QuickSettingsVolumeLabel {
     private mixer?: Gvc.MixerControl;
     private sink?: Gvc.MixerStream;
     private label?: PercentageLabel;
-    private idleId = 0;
+    private sourceId = 0;
 
     constructor(settings: Gio.Settings, mixerName: string) {
         this.settings = settings;
@@ -241,33 +267,16 @@ class QuickSettingsVolumeLabel {
         );
         this.mixer.open();
 
-        // Lazily add after Quick Settings is build
-        this.idleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-            this.label = new PercentageLabel(this.settings, 'quick-settings-');
-
-            this.label.bindAttribute('quick-settings-volume', 'visible');
-
-            const quickSettingsMenu = Main.panel.statusArea.quickSettings.menu;
-
-            const sliderRow = quickSettingsMenu._grid.get_children()[1].get_first_child();
-            if (!sliderRow) {
-                throw new Error('Failed to find volume slider in quick settings.');
-            }
-
-            // [mute button] [slider] [<our inserted label>] [settings button]
-            sliderRow.insert_child_at_index(this.label.rawLabel, 2);
-
-            this.updateLabel();
-
-            this.idleId = 0;
-            return GLib.SOURCE_REMOVE;
+        this.sourceId = whenQuickSettingsReady((quickSettings) => {
+            this.sourceId = 0;
+            if (quickSettings) this.addLabel(quickSettings);
         });
     }
 
     disable() {
-        if (this.idleId) {
-            GLib.source_remove(this.idleId);
-            this.idleId = 0;
+        if (this.sourceId) {
+            GLib.source_remove(this.sourceId);
+            this.sourceId = 0;
         }
         
         this.sink?.disconnectObject(this);
@@ -292,6 +301,21 @@ class QuickSettingsVolumeLabel {
             'notify::is-muted', () => this.updateLabel(),
             this
         );
+
+        this.updateLabel();
+    }
+
+    private addLabel(quickSettings: QuickSettings) {
+        this.label = new PercentageLabel(this.settings, 'quick-settings-');
+        this.label.bindAttribute('quick-settings-volume', 'visible');
+
+        const sliderRow = quickSettings.menu._grid.get_children()[1].get_first_child();
+        if (!sliderRow) {
+            throw new Error('Failed to find volume slider in quick settings.');
+        }
+
+        // [mute button] [slider] [<our inserted label>] [settings button]
+        sliderRow.insert_child_at_index(this.label.rawLabel, 2);
 
         this.updateLabel();
     }
